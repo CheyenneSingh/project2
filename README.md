@@ -1,4 +1,2 @@
-# Project 1
-Project 1
-
-Daniel Battick here
+# Projec 1
+Project 1 Code

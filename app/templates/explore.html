@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/explore.css') }}"> 
+{% endblock%}
+
+{%block main %}
+    <div class="container">
+        <div class="title">
+            <h1>Posts</h1>
+        </div>
+        
+            {% for post in posts %}
+                <div class="post">
+                    <div class="card">
+                        <div class="heading">
+                            <p class="user"><img class="profile-pic" src="app/static/uploads/default-profile"> {{post.user_name}} </p>
+                        </div>
+
+                        <div class="content">
+                            <img class="pic-post" src="{{ url_for('static',filename='uploads/pic/'+post.pic)}}">
+                            <br><br>
+                            <p> {{post.desc}} </p>
+                        </div>
+
+                        <div class="foot">
+                            <p class="likes"> <i class="far fa-heart"></i>  {{post.likes}} </p>
+                            <p class="date"> {{post.created}} </p>
+                        </div>
+                 
+                    </div>
+                    
+                    <div class="view-button">
+                        <button class="view" type="submit"> View Post </button>
+                    </div>
+                </div>
+            {% endfor %}
+          
+    </div>
+{% endblock %}

@@ -1,16 +1,15 @@
-# ----------------------
-# Flask
-# ----------------------
-flask
+Click==7.0
+Flask==1.1.1
+gunicorn==19.9.0
+itsdangerous==1.1.0
+Jinja2==2.11.1
+MarkupSafe==1.1.0
+Werkzeug==1.0.0
+WTForms==2.2.1
+Flask-Mail
 Flask-WTF
 Flask-SQLAlchemy
+Flask-Login
 Flask-Migrate
 Flask-Script
-Flask-Login
 psycopg2
-Flask-Bootstrap
-
-# ----------------------
-# Production Server
-# ----------------------
-gunicorn
