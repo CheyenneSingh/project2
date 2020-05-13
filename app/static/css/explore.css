@@ -13,11 +13,9 @@ body {
     padding-left: 15px;
     margin-right: auto;
     margin-left: auto;
+    
 }
-.post{
-    display: flex;
-    justify-content: space-between;
-}
+
 .card {
     border-radius: 5px;
     background: white;
@@ -76,8 +74,17 @@ form {
     display: block;
     margin-top: 0em;
 }
+
 .view-button{
+    grid-area: 2 / 2 / 3 / 3;
     align-content: right;
+    width: 130px;
+    position: fixed;
+    z-index: 15;
+    top: 160px;
+    right: 150px;
+    overflow-x: hidden;
+    padding: 8px 0;
 }
 .view{
     max-height: 40%;
@@ -85,9 +92,11 @@ form {
     background-color: rgb(235, 213, 20);
     border: none;
     color: white;
-    padding: 10px 10px;
+    padding-top: 10px;
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-bottom: 10px;
     text-align: center;
-    display: inline-block;
     font-size: 15px;
     margin: 4px 2px;
     border-radius: 9px;
