@@ -4,156 +4,198 @@ Jinja2 Documentation:    http://jinja.pocoo.org/2/documentation/
 Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
+
 import os
-from app import app, db
-from flask import render_template, request, jsonify, redirect, url_for, flash, session, abort
+from app import app, db, login_manager
+import datetime
+from flask.json import jsonify
+from flask import render_template, request, redirect, url_for, flash, session, abort
+from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
-from .models import UserProfile
-from .forms import ProfileForm
-import time
-from app.forms import PostForm
-from app.models import UserPost
+from werkzeug.security import check_password_hash
+
+from .forms import UploadForm, LoginForm, GramForm
+from .models import Users
+from app.models import Posts
+
 
 ###
 # Routing for your application.
 ###
 
-@app.route('/')
-def home():
-    """Render website's home page."""
-    return render_template('home.html')
 
-################################################################
+# Please create all new routes and view functions above this route.
+# This route is now our catch all route for our VueJS single page
+# application.
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def index(path):
+    return render_template('index.html')
 
-@app.route('/about/')
-def about():
-    """Render the website's about page."""
-    return render_template('about.html', name="...")
 
-####################################################################
-
-@app.route('/profile', methods=['GET', 'POST'])
-def profile():
-    """new profile"""
-    form = ProfileForm()
-
-    if form.validate_on_submit(): 
-        if request.method == 'POST':
-            created = str(time.strftime('%Y/%b/%d'))
-            first_name = request.form['first_name']
-            last_name = request.form['last_name']
-            user_name = request.form['user_name']
-            email = request.form['email']
-            location = request.form['location']
-            gender = request.form['gender']
-            bio = request.form['bio']
-
-            profilepic = request.files['image']
-            if profilepic:
-                uploadfolder = app.config['UPLOAD_FOLDER_PP']
-                filename = secure_filename(profilepic.filename)
-                profilepic.save(os.path.join(uploadfolder, filename))
-                
-            user = UserProfile( created=created, first_name=first_name, last_name=last_name, user_name=user_name,
-                                email=email, location=location, gender=gender, bio=bio, pic=filename)
-            db.session.add(user)
-            db.session.commit()
-            flash('New user added successfully')
-            return redirect(url_for('profiles'))
-    return render_template('Profile.html', form=form)
-
-#######################################################################
-
-@app.route('/profiles', methods=['GET'])
-def profiles():
-    """view profiles"""
-    profile_list=[]
+@app.route('/api/users/{user_id}/posts', methods=['POST'])
+@login_required
+def upload():
+    photoform = UploadForm()
     
-    profiles= UserProfile.query.filter_by().all()
-    
-    
-    if request.method == 'GET':
-        return render_template('profiles.html', profile=profiles)
-    return redirect(url_for('home'))
+    user = Users.query.filter_by().first() 
 
-##############################################################################
-    
-@app.route('/profile/<userid>', methods=['GET'])
-def userprofile(userid):
-    """view individual profile"""
-    user = UserProfile.query.filter_by(id=userid).first()
+    if request.method == 'POST':
+        if photoform.validate_on_submit():
+            photo = photoform.photo.data  
+            description = photoform.description.data
 
-    if request.method == 'GET' and user:
-        return render_template('indiprofile.html', profile=user)
+            filename = secure_filename(photo.filename)
+            photo.save(os.path.join(
+                app.config['UPLOAD_FOLDER'], filename
+            ))
 
-    return render_template('Profile.html')
+            d = datetime.datetime.today()
+            joined_on = d.strftime("%d-%B-%Y")
 
+            post = Posts(joined_on=joined_on, photo=filename, caption=description)
 
-########################################################################################
-
-@app.route('/post', methods=['GET', 'POST'])
-def post():
-    """new post"""
-    form = PostForm()
-
-    if form.validate_on_submit(): 
-        if request.method == 'POST':
-            created = str(time.strftime('%Y/%b/%d'))
-            likes = 1
-            user_name = request.form['user_name']
-            desc = request.form['desc']
-
-            pic = request.files['image']
-            if pic:
-                uploadfolder = app.config['UPLOAD_FOLDER_POST']
-                filename = secure_filename(pic.filename)
-                pic.save(os.path.join(uploadfolder, filename))
-                
-            post = UserPost( user_name=user_name, pic=filename, desc=desc, likes=likes, created=created)
             db.session.add(post)
             db.session.commit()
-            flash('New post added successfully')
-            return redirect(url_for('posts'))
-    return render_template('Post.html', form=form)
 
-#####################################################################################################################################
+            posts = Posts.query.all()
 
-@app.route('/posts', methods=['GET'])
-def posts():
-    """view posts"""
-    profile_list=[]
-    profiles= UserProfile.query.filter_by().all()
+            data = {
+                "message": "File Upload Successful",
+                "filename": filename,
+                "description": "Have a good day"
+            }
 
-    post_list=[]
-    posts= UserPost.query.filter_by().all()
+            return data
+
+        return {"errors": [{"error 1": "Closer"},
+                           {"error 2": "Not close enough tho"}]}
+
+    return {"errors": [{"error 1": "You must fill out the entire form"},
+                       {"error 2": "Please fill out the entire form"}]}
+
+
+@app.route("/api/auth/login", methods=["GET", "POST"])
+def login():
+    form = LoginForm()
+    if request.method == "POST":
+        if form.validate_on_submit():
+            # change this to actually validate the entire form submission
+            # and not just one field
+            if form.username.data:
+                # Get the username and password values from the form.
+                password = form.password.data
+                username = form.username.data
+
+                user = Users.query.filter_by(username=username).first()
+
+                if user is not None and check_password_hash(user.password, password):
+
+                    login_user(user)
+
+                    return {"message": "success"}
+    return {"message": "Try again"}
+
+##################################################################################
+
+@app.route("/api/posts")
+@login_required
+def explore():
+
+    #users = Users.query.fetchall()
+    #posts = Posts.query.fetchall()
     
- #   if request.method == 'POST':
- #       for profile in profiles:
- #          profile_list +=[{'username':profile.username, 'userID':profile.uid}]
- #      return jsonify(users=profile_list)
+    #for user in users:
+        #for post in posts:
+            #return jsonify({
+                #'status': 'success',
+                #'posts': Posts
+            #})
+    #return jsonify({ 'posts': [post.to_dict() for post in posts] })
+    return {"message": "Welcome to the explore pages"}
 
-    if request.method == 'GET':
-       # for profile in profiles:
-        #    for post in posts:
-              #  if profile.user_name == post.user_name:
-                    return render_template('explore.html', posts=posts)
-    return redirect(url_for('home'))
-    
-####################################################################################################################
+###################################################################################################
+
+@app.route("/api/auth/logout")
+@login_required
+def logout():
+
+    logout_user()
+    return {"message": "The user has logged out"}
+
+#####################################################################################################
+
+@app.route("/api/users/register", methods=['POST'])
+def register():
+    registerform = GramForm()
+
+    if request.method == 'POST':
+        if registerform.validate_on_submit():
+            username = registerform.username.data
+            password = registerform.password.data
+            first_name = registerform.firstname.data
+            last_name = registerform.lastname.data
+            email = registerform.email.data
+            location = registerform.location.data
+            bio = registerform.biography.data
+            photo = registerform.photo.data
+            filename = secure_filename(photo.filename)
+            photo.save(os.path.join(
+                app.config['UPLOAD_FOLDER'], filename
+            ))
+
+            d = datetime.datetime.today()
+            joined_on = d.strftime("%d-%B-%Y")
+
+            user = Users(username=username, password=password, first_name=first_name, last_name=last_name, email=email,
+                         location=location, bio=bio,
+                         joined_on=joined_on, photo=filename)
+
+            db.session.add(user)
+            db.session.commit()
+
+            users = Users.query.all()
+
+            data = {
+                "message": "File Upload Successful",
+                "filename": filename,
+                "description": "Have a good day"
+            }
+
+            return data
+
+        return {"errors": [{"error 1": "Closer"},
+                           {"error 2": "Not close enough tho"}]}
+
+    return {"errors": [{"error 1": "You must fill out the entire form"},
+                       {"error 2": "Please fill out the entire form"}]}
+
+#################################################################################################
+
+@login_manager.user_loader
+def load_user(id):
+    return Users.query.get(int(id))
+#################################################################################################
+
+# Here we define a function to collect form errors from Flask-WTF
+# which we can later use
+def form_errors(form):
+    error_messages = []
+    """Collects form errors"""
+    for field, errors in form.errors.items():
+        for error in errors:
+            message = u"Error in the %s field - %s" % (
+                getattr(form, field).label.text,
+                error
+            )
+            error_messages.append(message)
+
+    return error_messages
+
 
 ###
 # The functions below should be applicable to all Flask apps.
 ###
-
-
-# Flash errors from the form if validation fails
-def flash_errors(form):
-    for field, errors in form.errors.items():
-        for error in errors:
-            flash(u"Error in the %s field - %s" % (
-                getattr(form, field).label.text,
-                error
-            ), 'danger')
 
 
 @app.route('/<file_name>.txt')

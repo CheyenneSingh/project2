@@ -8,42 +8,30 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Flask App</title>
+    <title>INFO3180 Lab 7</title>
+
+    <script src="https://kit.fontawesome.com/449908a2fc.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Passion+One&display=swap" rel="stylesheet">
 
     <!-- Bootstrap -->
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/010c032427.js"></script>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     {% block css %} {% endblock%}
   </head>
   <body>
-    <header>
-        {% include "header.html" %}
-    </header>
-    <main>
-        <div class="container">
-            {% block main %}{% endblock %}
-        </div>
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          <ul class="flashes">
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-          </ul>
-        {% endif %}
-        {% endwith %}
-    </main>
-    <footer>
-        <div class="container">
-            {% include "footer.html" %}
-        </div>
-    </footer>
+    <div id="main">
+        {% block main %}{% endblock %}
+    </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/vue.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/vue-router.js') }}"></script>
+    <script>const token = "{{ csrf_token() }}";</script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block js %} {% endblock%}
   </body>
 </html>

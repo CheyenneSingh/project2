@@ -1,19 +1,23 @@
 from flask import Flask
+from flask_wtf.csrf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+
 
 app = Flask(__name__)
-
-app.config['SECRET_KEY'] = 'passphrase'
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://project2:project2@localhost/project2"
+csrf = CSRFProtect(app)
+app.config['SECRET_KEY'] = "v\xf9\xf7\x11\x13\x18\xfaMYp\xed_\xe8\xc9w\x06\x8e\xf0f\xd2\xba\xfd\x8c\xda"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://project2:project2@localhost/p2"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True # added just to suppress a warning
 
-UPLOAD_FOLDER_PP = './app/static/uploads'
-UPLOAD_FOLDER_POST = './app/static/uploads/pic'
+# Flask-Login login manager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
 db = SQLAlchemy(app)
 
-
+UPLOAD_FOLDER = './app/static/uploads'
 app.config.from_object(__name__)
-app.config['UPLOAD_FOLDER_PP'] = UPLOAD_FOLDER_PP
-app.config['UPLOAD_FOLDER_POST'] = UPLOAD_FOLDER_POST
-from app import views
 
+from app import views

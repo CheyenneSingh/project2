@@ -1,23 +1,23 @@
-from flask_wtf import FlaskForm, CSRFProtect
+from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
-from wtforms import StringField, TextAreaField, SubmitField, SelectField
-from wtforms.validators import DataRequired, Email, InputRequired
+from wtforms import StringField, TextAreaField, PasswordField
+from wtforms.validators import DataRequired, InputRequired, Email
 
-csrf = CSRFProtect() 
 
-class ProfileForm(FlaskForm):
-    first_name = StringField('First Name', validators=[DataRequired('Please enter your first name.')])
-    last_name = StringField('Last Name', validators=[DataRequired('Please enter your last name.')])
-    user_name = StringField('User Name', validators=[DataRequired('Please enter your user name.')])
-    email = StringField('E-mail', validators=[DataRequired('Please enter your e-mail address.'), Email()])
-    location = StringField('Location', validators=[DataRequired('Please enter your location.')])
-    gender = SelectField('Gender', validators=[DataRequired('Please enter your gender.')], choices=[('',''),('Male', 'Male'),('Female','Female')])
-    bio = TextAreaField('Bio', validators=[DataRequired('Please enter your bio.')])
-    image =  FileField('Image', validators=[FileRequired(), FileAllowed(['jpg', 'png'], 'Images only!')])
-    submit = SubmitField('Save')
+class UploadForm(FlaskForm):
+    description = TextAreaField('Description', validators=[DataRequired()])
+    photo = FileField('Profile Photo', validators=[FileRequired(), FileAllowed(['jpg', 'png', 'Images only!'])])
 
-class PostForm(FlaskForm):
-    user_name = StringField('User Name', validators=[DataRequired('Please enter your user name.')])
-    image =  FileField('Image', validators=[FileRequired(), FileAllowed(['jpg', 'png'], 'Images only!')])
-    desc = TextAreaField('Description', validators=[DataRequired('Please enter your bio.')])
-    submit = SubmitField('Save')
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[InputRequired()])
+    password = PasswordField('Password', validators=[InputRequired()])
+
+class GramForm(FlaskForm):
+    username = StringField('Username', validators=[InputRequired()])
+    password = StringField('Password', validators=[InputRequired()])
+    firstname = StringField('First Name', validators=[InputRequired()])
+    lastname = StringField('Last Name', validators=[InputRequired()])
+    email = StringField('Email', validators=[InputRequired(), Email()])
+    location = StringField('Location', validators=[InputRequired()])
+    biography = TextAreaField()
+    photo = FileField('Profile Photo', validators=[FileRequired(), FileAllowed(['jpg', 'png', 'Images only!'])])

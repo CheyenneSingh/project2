@@ -1,2 +1,2 @@
-# Projec 1
-Project 1 Code
+# INFO3180 Lab 7
+Starter code for Lab 7
