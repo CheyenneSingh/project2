@@ -287,6 +287,106 @@ const Login = Vue.component('login', {
 
 });
 
+const User = Vue.component('Profile', {
+    template: `
+    <div>
+        <div class=" row bg-white d-flex flex-row justify-content-between bg-white rounded shadow-sm p-3 mb-3">
+
+            <div class=" mr-2">
+                <img class="display_img" v-bind:src="user.photo" alt="User profile photo">
+            </div>
+
+            <div class="d-flex flex-column">
+                <p class="font-weight-bold text-muted"> {{user.firstname}} {{user.lastname}} </p>
+                <p class="text-muted"> 
+                {{user.location}} <br>
+                Member since {{user.joined_on}} 
+                </p>
+                <p class="text-muted"> {{user.bio}} </p>
+            </div>
+
+            <div class="d-flex flex-column justify-content-between">
+                <div class="d-flex flex-row justify-content-between">
+                    <div class="d-flex flex-column justify-content-center align-items-center p-2">
+                        <span class="font-weight-bold text-muted">{{ numPosts }}</span>
+                        <p class="font-weight-bold text-muted">Posts</p>
+                    </div>
+
+                    <div class="d-flex flex-column justify-content-center align-items-center p-2">
+                        <span class="font-weight-bold text-muted">{{ followers }}</span>
+                        <p class="font-weight-bold text-muted">Followers</p>
+                    </div>
+                </div>
+
+                <div v-if="!isUser">
+                    <button v-if="user.isFollowing" @click="follow" class="btn btn-success font-weight-bold w-100">Following</button>
+                    <button v-else v-on:click="follow" class="btn btn-primary font-weight-bold w-100">Follow</button>
+                </div>
+            </div>
+        </div>
+
+        <ul class="row list-inline">
+            <li class="col-sm-4" v-for="post in userposts">
+                <div class="card-body no-padding">
+                    <img v-bind:src="posts.photo" alt="Post photo" class="img-fluid card-img-top postPics">
+                </div>
+            </li>
+        </ul>
+    </div>
+  `,
+    methods: {
+        follow: function(){
+        self = this;
+        
+        fetch(`/api/users/${self.$route.params.user_id}/follow`,{
+            method: "POST",
+            headers: {
+            "Authorization": `Bearer ${JSON.parse(localStorage.current_user).token}`,
+            "Content-Type": "application/json",
+            'X-CSRFToken': token
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({"follower_id": JSON.parse(localStorage.current_user).id, "user_id": self.$route.params.user_id})
+        }).then(function(response){
+            return response.json();
+        }).then(function(jsonResponse){
+            
+            if(jsonResponse.hasOwnProperty("message") && jsonResponse.status==201 ){
+            $("#follow-btn")[0].innerHTML="Following";
+            $("#follow-btn").removeClass("btn-primary");
+            $("#follow-btn").addClass("btn-success")
+            ++ self.user.followers;
+            }
+            
+        }).catch(function(error){
+            console.log(error)
+        });
+        }
+    },
+    created: function(){
+        self = this;
+        
+        fetch(`/api/users/${self.$route.params.user_id}/posts`,{
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${JSON.parse(localStorage.current_user).token}`
+        }
+    }).then(function(response){
+        return response.json();
+    }).then(function(jsonResponse){
+        self.user = jsonResponse.post_data;
+    }).catch(function(error){
+        console.log(error);
+    });
+    },
+    data: function(){
+    return {
+        user: null,
+        cu_id: (this.$route.params.user_id == JSON.parse(localStorage.current_user).id) ? true : false
+    }
+    }
+});
+
 
 const Registration = Vue.component('Registration', {
     template: `

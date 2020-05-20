@@ -27,11 +27,14 @@ from app.models import Posts
 # Please create all new routes and view functions above this route.
 # This route is now our catch all route for our VueJS single page
 # application.
+##################################################################################################
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def index(path):
     return render_template('index.html')
 
+#####################################################################################################
 
 @app.route('/api/users/{user_id}/posts', methods=['POST'])
 @login_required
@@ -74,6 +77,29 @@ def upload():
     return {"errors": [{"error 1": "You must fill out the entire form"},
                        {"error 2": "Please fill out the entire form"}]}
 
+###########################################################################################
+
+@app.route("/api/current_user")
+@login_required
+def get_id():
+    photos=[]
+    id=current_user.id
+    username=current_user.username
+    location=current_user.location 
+    biography=current_user.biography 
+
+    post= posts.query.filter_by(user_id=id)
+    
+    print(post) 
+    for i in post:
+        pic={"pic":i.photo}
+        photos.append(pic)
+    print(photos)
+    return jsonify({"id":id,"username":username,"location":location,
+                    "biography":biography,"firstname":current_user.firstname,"lastname":current_user.lastname,
+                    "profile_picture":current_user.profile_picture,"join_on":current_user.joined_on,"photos":photos})
+
+##############################################################################################
 
 @app.route("/api/auth/login", methods=["GET", "POST"])
 def login():
